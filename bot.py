@@ -141,8 +141,17 @@ async def start(message: Message, state: FSMContext):
 
 @dp.message(F.text == "🛍 Каталог")
 @dp.message(Command("catalog"))
-async def catalog(message: Message):
-    services = get_active_services()
+@dp.message(F.text == "🛍 Каталог")
+@dp.message(Command("catalog"))
+async def catalog(message: Message, state: FSMContext):
+    data = await state.get_data()
+    business_id = data.get("business_id")
+
+    if not business_id:
+        await message.answer("Сначала откройте бота по ссылке вашего бизнеса.")
+        return
+
+    services = get_active_services(business_id)
 
     if not services:
         await message.answer("Каталог пока пуст.")
@@ -161,8 +170,7 @@ async def catalog(message: Message):
             f"Стоимость: {price(service.get('price'))}",
             reply_markup=builder.as_markup(),
             parse_mode="HTML",
-        )
-
+            
 
 @dp.message(F.text == "📅 Записаться")
 async def booking_menu(message: Message):
