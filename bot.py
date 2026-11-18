@@ -523,7 +523,7 @@ async def delete_service_command(message: Message):
 
     await message.answer("Услуга отключена и скрыта из каталога.")
     
-        async def main():
+async def main():
     logging.info("Business Bot Studio запущен")
     await dp.start_polling(bot)
 
