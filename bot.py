@@ -46,7 +46,8 @@ class Lead(StatesGroup):
     name = State()
     phone = State()
     message = State()
-    class ServiceForm(StatesGroup):
+
+class ServiceForm(StatesGroup):
     title = State()
     price = State()
     description = State()
