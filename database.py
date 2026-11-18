@@ -21,8 +21,6 @@ def get_settings() -> dict:
         .execute()
     )
     return response.data[0] if response.data else {}
-
-
 def get_active_services() -> list[dict]:
     response = (
         get_db()
