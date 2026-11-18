@@ -494,7 +494,26 @@ async def add_service_description(message: Message, state: FSMContext):
         f"Услуга «{data['title']}» успешно добавлена!"
     )
 
-async def main():
+@dp.message(Command("editservice"))
+async def edit_service_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        await message.answer("Нет доступа.")
+        return
+
+    items = get_all_services()
+
+    if not items:
+        await message.answer("Услуг пока нет.")
+        return
+
+    text = "Введите ID услуги, которую хотите изменить:\n\n"
+    for item in items:
+        text += f"ID: {item['id']} — {item['title']}\n"
+
+    await state.set_state(ServiceForm.title)
+    await state.update_data(editing=True)
+    await message.answer(text)
+    async def main():
     logging.info("Business Bot Studio запущен")
     await dp.start_polling(bot)
 
