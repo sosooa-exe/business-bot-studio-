@@ -475,6 +475,7 @@ async def edit_service_field(message: Message, state: FSMContext):
 
 @dp.message(ServiceEdit.value)
 async def edit_service_value(message: Message, state: FSMContext):
+    await message.answer("Не удалось обновить услугу. Проверьте ID.")
     data = await state.get_data()
     field = data["field"]
     value = message.text.strip()
