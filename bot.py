@@ -23,6 +23,11 @@ from database import (
     create_booking,
     get_recent_leads,
     get_recent_bookings,
+    create_service,
+    update_service,
+    deactivate_service,
+    get_all_services,
+)
 )
 
 logging.basicConfig(level=logging.INFO)
