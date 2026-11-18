@@ -437,6 +437,65 @@ async def add_service_duration(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("✅ Новая услуга добавлена!")
 
+    @dp.message(Command("editservice"))
+async def edit_service_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        return
+
+    await state.set_state(ServiceEdit.service_id)
+    await message.answer(
+        "Введите ID услуги. Посмотреть ID можно командой /services"
+    )
+
+
+@dp.message(ServiceEdit.service_id)
+async def edit_service_id(message: Message, state: FSMContext):
+    await state.update_data(service_id=message.text.strip())
+    await state.set_state(ServiceEdit.field)
+    await message.answer(
+        "Что изменить? Напишите:\n"
+        "title — название\n"
+        "price — цену\n"
+        "description — описание"
+    )
+
+
+@dp.message(ServiceEdit.field)
+async def edit_service_field(message: Message, state: FSMContext):
+    field = message.text.strip().lower()
+
+    if field not in ("title", "price", "description"):
+        await message.answer("Введите title, price или description.")
+        return
+
+    await state.update_data(field=field)
+    await state.set_state(ServiceEdit.value)
+    await message.answer("Введите новое значение:")
+
+
+@dp.message(ServiceEdit.value)
+async def edit_service_value(message: Message, state: FSMContext):
+    data = await state.get_data()
+    field = data["field"]
+    value = message.text.strip()
+
+    if field == "price":
+        try:
+            value = float(value.replace(",", "."))
+            if value < 0:
+                raise ValueError
+        except ValueError:
+            await message.answer("Введите корректную цену числом.")
+            return
+
+    result = update_service(data["service_id"], {field: value})
+    await state.clear()
+
+    if result:
+        await message.answer("✅ Услуга обновлена!")
+    else:
+        await message.answer("Не удалось обновить услугу. Проверьте ID.")
+
     if not items:
         await message.answer("Заявок пока нет.")
         return
