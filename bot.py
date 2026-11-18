@@ -628,13 +628,22 @@ async def add_service_description(message: Message, state: FSMContext):
             "description": message.text.strip(),
             "is_active": True,
         })
+
+    
     except Exception:
         logging.exception("Ошибка создания услуги")
         await message.answer(
             "Не удалось добавить услугу. Проверьте логи Railway."
+        )
+        await state.clear()
+        return
 
-            
-      @dp.message(Command("settings"))
+    await state.clear()
+    await message.answer(
+        f"Услуга «{data['title']}» успешно добавлена!"
+    )
+
+@dp.message(Command("settings"))
 async def settings_start(message: Message, state: FSMContext):
     if not admin(message.from_user.id):
         await message.answer("Нет доступа.")
@@ -648,16 +657,6 @@ async def settings_start(message: Message, state: FSMContext):
         return
 
     settings = get_settings(business_id)
-
-    
-    )
-@dp.message(Command("settings"))
-async def settings_start(message: Message, state: FSMContext):
-    if not admin(message.from_user.id):
-        await message.answer("Нет доступа.")
-        return
-
-    settings = get_settings()
 
     if not settings:
         await message.answer("Настройки не найдены.")
@@ -673,22 +672,7 @@ async def settings_start(message: Message, state: FSMContext):
         "/editsettings"
     )
 
-@dp.message(Command("editsettings"))
-async def edit_settings_start(message: Message, state: FSMContext):
-    if not admin(message.from_user.id):
-        await message.answer("Нет доступа.")
-        return
 
-    await state.set_state(SettingsForm.bot_name)
-    await message.answer("Введите новое название бизнеса:")
-
-@dp.message(SettingsForm.bot_name)
-async def edit_settings_name(message: Message, state: FSMContext):
-    await state.update_data(bot_name=message.text.strip())
-    await state.set_state(SettingsForm.welcome_text)
-    await message.answer("Введите новое приветствие:")
-
-@dp.message(SettingsForm.welcome_text)
 async def edit_settings_welcome(message: Message, state: FSMContext):
     await state.update_data(welcome_text=message.text.strip())
     await state.set_state(SettingsForm.contact_phone)
