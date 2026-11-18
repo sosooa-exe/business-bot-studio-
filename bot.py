@@ -201,8 +201,16 @@ async def booking_menu(message: Message, state: FSMContext):
 
 @dp.callback_query(F.data.startswith("book:"))
 async def choose_service(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    business_id = data.get("business_id")
+
+    if not business_id:
+        await callback.answer("Сначала откройте бота по ссылке бизнеса.", show_alert=True)
+        return
+
     service_id = callback.data.split(":", 1)[1]
-    services = get_active_services()
+    services = get_active_services(business_id)
+    
 
     service = next(
         (s for s in services if str(s["id"]) == service_id),
