@@ -28,7 +28,6 @@ from database import (
     deactivate_service,
     get_all_services,
 )
-)
 
 logging.basicConfig(level=logging.INFO)
 
