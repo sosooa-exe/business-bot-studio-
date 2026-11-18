@@ -352,7 +352,25 @@ async def admin_panel(message: Message):
         "/leads — заявки\n"
         "/bookings — записи"
     )
+@dp.message(Command("leads"))
+async def leads(message: Message):
+    if not admin(message.from_user.id):
+        return
 
+    items = get_recent_leads()
+
+    if not items:
+        await message.answer("Заявок пока нет.")
+        return
+
+    for item in items:
+        await message.answer(
+            f"Заявка\n"
+            f"Имя: {item.get('full_name')}\n"
+            f"Телефон: {item.get('phone')}\n"
+            f"Сообщение: {item.get('message')}\n"
+            f"Статус: {item.get('status')}"
+        )
 
 
 @dp.message(Command("bookings"))
