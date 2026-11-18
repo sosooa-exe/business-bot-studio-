@@ -76,7 +76,7 @@ def get_recent_bookings(limit: int = 10) -> list[dict]:
     )
     return response.data or []
     def create_service(data: dict) -> dict:
-    response = (
+        response = (
         get_db()
         .table("services")
         .insert(data)
