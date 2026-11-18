@@ -47,6 +47,10 @@ class Lead(StatesGroup):
     name = State()
     phone = State()
     message = State()
+    class ServiceForm(StatesGroup):
+    title = State()
+    price = State()
+    description = State()
 
 
 def keyboard():
