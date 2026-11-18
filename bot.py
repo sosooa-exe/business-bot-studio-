@@ -169,11 +169,19 @@ async def catalog(message: Message, state: FSMContext):
             reply_markup=builder.as_markup(),
             parse_mode="HTML",
         )
-            
+
 
 @dp.message(F.text == "📅 Записаться")
-async def booking_menu(message: Message):
-    services = get_active_services()
+async def booking_menu(message: Message, state: FSMContext):
+    data = await state.get_data()
+    business_id = data.get("business_id")
+
+    if not business_id:
+        await message.answer("Сначала откройте бота по ссылке вашего бизнеса.")
+        return
+
+    services = get_active_services(business_id)
+    
 
     if not services:
         await message.answer("Пока нет доступных услуг.")
