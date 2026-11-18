@@ -354,12 +354,88 @@ async def admin_panel(message: Message):
     )
 
 
-@dp.message(Command("leads"))
+@dp.message(Command("services"))
+async def admin_services(message: Message):
+    if not admin(message.from_user.id):
+        return
+
+    services = get_all_services()
+
+    if not services:
+        await message.answer("Услуг пока нет.")
+        return
+
+    text = "📋 Управление услугами:\n\n"
+    for service in services:
+        status = "✅" if service["is_active"] else "❌"
+        text += (
+            f"{status} {service['title']}\n"
+            f"Цена: {service.get('price', 0)} ₽\n"
+            f"ID: {service['id']}\n\n"
+        )
+
+    text += "Для добавления услуги используй /addservice"
+    await message.answer(text)@dp.message(Command("leads"))
 async def leads(message: Message):
     if not admin(message.from_user.id):
         return
 
     items = get_recent_leads()
+    @dp.message(Command("addservice"))
+async def add_service_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        return
+
+    await state.set_state(ServiceForm.title)
+    await message.answer("Введите название новой услуги:")
+
+@dp.message(ServiceForm.title)
+async def add_service_title(message: Message, state: FSMContext):
+    await state.update_data(title=message.text.strip())
+    await state.set_state(ServiceForm.description)
+    await message.answer("Введите описание услуги:")
+
+@dp.message(ServiceForm.description)
+async def add_service_description(message: Message, state: FSMContext):
+    await state.update_data(description=message.text.strip())
+    await state.set_state(ServiceForm.price)
+    await message.answer("Введите цену услуги числом:")
+
+@dp.message(ServiceForm.price)
+async def add_service_price(message: Message, state: FSMContext):
+    try:
+        price = float(message.text.replace(",", "."))
+        if price < 0:
+            raise ValueError
+    except ValueError:
+        await message.answer("Введите корректную цену числом, например 1500.")
+        return
+
+    await state.update_data(price=price)
+    await state.set_state(ServiceForm.duration)
+    await message.answer("Введите длительность услуги в минутах:")
+
+@dp.message(ServiceForm.duration)
+async def add_service_duration(message: Message, state: FSMContext):
+    try:
+        duration = int(message.text)
+        if duration < 0:
+            raise ValueError
+    except ValueError:
+        await message.answer("Введите целое число минут, например 60.")
+        return
+
+    data = await state.get_data()
+    create_service({
+        "title": data["title"],
+        "description": data["description"],
+        "price": data["price"],
+        "duration_minutes": duration,
+        "is_active": True,
+    })
+
+    await state.clear()
+    await message.answer("✅ Новая услуга добавлена!")
 
     if not items:
         await message.answer("Заявок пока нет.")
