@@ -23,6 +23,22 @@ def get_settings() -> dict:
     return response.data[0] if response.data else {}
 
 
+def update_settings(data: dict) -> dict:
+    settings = get_settings()
+
+    if not settings:
+        return {}
+
+    response = (
+        get_db()
+        .table("bot_settings")
+        .update(data)
+        .eq("id", settings["id"])
+        .execute()
+    )
+    return response.data[0] if response.data else {}
+
+
 def get_active_services() -> list[dict]:
     response = (
         get_db()
