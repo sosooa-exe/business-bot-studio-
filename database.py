@@ -54,17 +54,18 @@ def update_settings(data: dict) -> dict:
     return response.data[0] if response.data else {}
 
 
-def get_active_services() -> list[dict]:
+def get_active_services(business_id: str) -> list[dict]:
     response = (
         get_db()
         .table("services")
         .select("*")
+        .eq("business_id", business_id)
         .eq("is_active", True)
         .order("sort_order")
         .execute()
     )
     return response.data or []
-
+    
 
 def create_lead(data: dict) -> dict:
     response = (
