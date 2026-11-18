@@ -632,13 +632,24 @@ async def add_service_description(message: Message, state: FSMContext):
         logging.exception("Ошибка создания услуги")
         await message.answer(
             "Не удалось добавить услугу. Проверьте логи Railway."
-        )
-        await state.clear()
+
+            
+      @dp.message(Command("settings"))
+async def settings_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        await message.answer("Нет доступа.")
         return
 
-    await state.clear()
-    await message.answer(
-        f"Услуга «{data['title']}» успешно добавлена!"
+    data = await state.get_data()
+    business_id = data.get("business_id")
+
+    if not business_id:
+        await message.answer("Сначала откройте бота по ссылке вашего бизнеса.")
+        return
+
+    settings = get_settings(business_id)
+
+    
     )
 @dp.message(Command("settings"))
 async def settings_start(message: Message, state: FSMContext):
