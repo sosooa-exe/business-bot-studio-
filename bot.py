@@ -53,6 +53,13 @@ class ServiceForm(StatesGroup):
     description = State()
 
 
+class EditServiceForm(StatesGroup):
+    service_id = State()
+    title = State()
+    price = State()
+    description = State()
+
+
 def keyboard():
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -427,6 +434,88 @@ async def services_admin(message: Message):
             f"Статус: {status}\n"
             f"ID: {item.get('id')}"
         )
+
+
+@dp.message(Command("editservice"))
+async def edit_service_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        await message.answer("Нет доступа.")
+        return
+
+    parts = message.text.split(maxsplit=1)
+
+    if len(parts) < 2:
+        await message.answer("Укажите ID услуги. Посмотреть ID можно через /services")
+        return
+
+    service_id = parts[1].strip()
+    services = get_all_services()
+    service = next(
+        (item for item in services if str(item.get("id")) == service_id),
+        None
+    )
+
+    if not service:
+        await message.answer("Услуга не найдена.")
+        return
+
+    await state.update_data(service_id=service_id)
+    await state.set_state(EditServiceForm.title)
+    await message.answer(
+        f"Текущее название: {service.get('title')}\n"
+        "Введите новое название:"
+    )
+
+@dp.message(EditServiceForm.title)
+async def edit_service_title(message: Message, state: FSMContext):
+    await state.update_data(title=message.text.strip())
+    await state.set_state(EditServiceForm.price)
+    await message.answer("Введите новую цену цифрами или «по запросу»:")
+
+@dp.message(EditServiceForm.price)
+async def edit_service_price(message: Message, state: FSMContext):
+    value = message.text.strip().lower()
+
+    if value == "по запросу":
+        service_price = None
+    else:
+        try:
+            service_price = float(value.replace(",", "."))
+            if service_price < 0:
+                raise ValueError
+        except ValueError:
+            await message.answer("Введите цену числом или «по запросу».")
+            return
+
+    await state.update_data(price=service_price)
+    await state.set_state(EditServiceForm.description)
+    await message.answer("Введите новое описание:")
+
+@dp.message(EditServiceForm.description)
+async def edit_service_description(message: Message, state: FSMContext):
+    data = await state.get_data()
+
+    try:
+        result = update_service(
+            data["service_id"],
+            {
+                "title": data["title"],
+                "price": data["price"],
+                "description": message.text.strip(),
+            }
+        )
+        if not result:
+            await message.answer("Не удалось найти или обновить услугу.")
+            await state.clear()
+            return
+    except Exception:
+        logging.exception("Ошибка редактирования услуги")
+        await message.answer("Не удалось обновить услугу.")
+        await state.clear()
+        return
+
+    await state.clear()
+    await message.answer("Услуга успешно обновлена!")
 
 
 @dp.message(Command("addservice"))
