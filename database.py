@@ -39,16 +39,17 @@ def get_business_by_slug(slug: str) -> dict | None:
     return response.data[0] if response.data else None
     
 
-def get_settings() -> dict:
+def get_settings(business_id: str) -> dict:
     response = (
         get_db()
         .table("bot_settings")
         .select("*")
+        .eq("business_id", business_id)
         .limit(1)
         .execute()
     )
     return response.data[0] if response.data else {}
-
+    
 
 def update_settings(data: dict) -> dict:
     settings = get_settings()
