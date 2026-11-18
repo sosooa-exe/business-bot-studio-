@@ -12,7 +12,7 @@ def get_db() -> Client:
     )
 
 
-def get_settings() -> dict:
+def get_settings() -> dict:    
     response = (
         get_db()
         .table("bot_settings")
