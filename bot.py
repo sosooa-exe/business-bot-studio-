@@ -110,8 +110,26 @@ async def notify_admins(text):
 async def start(message: Message, state: FSMContext):
     await state.clear()
 
-    settings = get_settings()
-    name = settings.get("bot_name") or "Наш бизнес"
+    parts = (message.text or "").split(maxsplit=1)
+
+    if len(parts) < 2:
+        await message.answer(
+            "Откройте бота по специальной ссылке вашего бизнеса."
+        )
+        return
+
+    slug = parts[1].strip()
+    business = get_business_by_slug(slug)
+
+    if not business:
+        await message.answer("Бизнес не найден или временно недоступен.")
+        return
+
+    business_id = str(business["id"])
+    await state.update_data(business_id=business_id)
+
+    settings = get_settings(business_id)
+    name = settings.get("bot_name") or business.get("name") or "Наш бизнес"
     welcome = settings.get("welcome_text") or "Здравствуйте! Чем можем помочь?"
 
     await message.answer(
