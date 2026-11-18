@@ -1,4 +1,6 @@
 from functools import lru_cache
+
+
 from supabase import Client, create_client
 
 from config import SUPABASE_URL, SUPABASE_SECRET_KEY
@@ -12,7 +14,20 @@ def get_db() -> Client:
     )
 
 
-def get_settings() -> dict:
+def get_business_by_owner(telegram_id: int) -> dict | None:
+    response = (
+        get_db()
+        .table("businesses")
+        .select("*")
+        .eq("owner_telegram_id", telegram_id)
+        .eq("status", "active")
+        .limit(1)
+        .execute()
+    )
+    return response.data[0] if response.data else None
+    
+    
+    def get_settings() -> dict:
     response = (
         get_db()
         .table("bot_settings")
