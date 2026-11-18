@@ -496,6 +496,30 @@ async def edit_service_value(message: Message, state: FSMContext):
         await message.answer("✅ Услуга обновлена!")
     else:
         await message.answer("Не удалось обновить услугу. Проверьте ID.")
+        @dp.message(Command("deleteservice"))
+async def delete_service_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        return
+
+    await state.set_state(ServiceDelete.service_id)
+    await message.answer(
+        "Введите ID услуги, которую хотите отключить.\n"
+        "Посмотреть ID можно командой /services"
+    )
+
+
+@dp.message(ServiceDelete.service_id)
+async def delete_service_confirm(message: Message, state: FSMContext):
+    service_id = message.text.strip()
+
+    result = deactivate_service(service_id)
+
+    await state.clear()
+
+    if result:
+        await message.answer("✅ Услуга отключена и скрыта из каталога.")
+    else:
+        await message.answer("Не удалось отключить услугу. Проверьте ID.")
 
     if not items:
         await message.answer("Заявок пока нет.")
