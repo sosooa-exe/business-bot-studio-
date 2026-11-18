@@ -492,7 +492,9 @@ async def add_service_description(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
         f"Услуга «{data['title']}» успешно добавлена!"
-    )async def main():
+    )
+
+async def main():
     logging.info("Business Bot Studio запущен")
     await dp.start_polling(bot)
 
