@@ -618,9 +618,6 @@ async def add_service_price(message: Message, state: FSMContext):
 
 
 @dp.message(ServiceForm.description)
-
-
-@dp.message(ServiceForm.description)
 async def add_service_description(message: Message, state: FSMContext):
     data = await state.get_data()
     business_id = data.get("business_id")
