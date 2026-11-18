@@ -406,7 +406,93 @@ async def bookings(message: Message):
         )
 
 
-async def main():
+@dp.message(Command("services"))
+async def services_admin(message: Message):
+    if not admin(message.from_user.id):
+        await message.answer("Нет доступа.")
+        return
+
+    items = get_all_services()
+
+    if not items:
+        await message.answer("Услуг пока нет.")
+        return
+
+    for item in items:
+        status = "Активна" if item.get("is_active") else "Отключена"
+        await message.answer(
+            f"Услуга: {item.get('title')}\n"
+            f"Цена: {price(item.get('price'))}\n"
+            f"Описание: {item.get('description') or '—'}\n"
+            f"Статус: {status}\n"
+            f"ID: {item.get('id')}"
+        )
+
+
+@dp.message(Command("addservice"))
+async def add_service_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        await message.answer("Нет доступа.")
+        return
+
+    await state.set_state(ServiceForm.title)
+    await message.answer("Введите название новой услуги:")
+
+
+@dp.message(ServiceForm.title)
+async def add_service_title(message: Message, state: FSMContext):
+    await state.update_data(title=message.text.strip())
+    await state.set_state(ServiceForm.price)
+    await message.answer(
+        "Введите цену цифрами или напишите «по запросу»:"
+    )
+
+
+@dp.message(ServiceForm.price)
+async def add_service_price(message: Message, state: FSMContext):
+    value = message.text.strip().lower()
+
+    if value == "по запросу":
+        service_price = None
+    else:
+        try:
+            service_price = float(value.replace(",", "."))
+            if service_price < 0:
+                raise ValueError
+        except ValueError:
+            await message.answer(
+                "Введите цену числом или напишите «по запросу»."
+            )
+            return
+
+    await state.update_data(price=service_price)
+    await state.set_state(ServiceForm.description)
+    await message.answer("Введите описание услуги:")
+
+
+@dp.message(ServiceForm.description)
+async def add_service_description(message: Message, state: FSMContext):
+    data = await state.get_data()
+
+    try:
+        create_service({
+            "title": data["title"],
+            "price": data["price"],
+            "description": message.text.strip(),
+            "is_active": True,
+        })
+    except Exception:
+        logging.exception("Ошибка создания услуги")
+        await message.answer(
+            "Не удалось добавить услугу. Проверьте логи Railway."
+        )
+        await state.clear()
+        return
+
+    await state.clear()
+    await message.answer(
+        f"Услуга «{data['title']}» успешно добавлена!"
+    )async def main():
     logging.info("Business Bot Studio запущен")
     await dp.start_polling(bot)
 
