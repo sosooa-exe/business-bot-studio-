@@ -25,8 +25,8 @@ def get_business_by_owner(telegram_id: int) -> dict | None:
         .execute()
     )
     return response.data[0] if response.data else None
-    
-    
+
+
 def get_settings() -> dict:
     response = (
         get_db()
