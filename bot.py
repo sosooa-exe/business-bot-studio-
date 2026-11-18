@@ -61,6 +61,13 @@ class EditServiceForm(StatesGroup):
     description = State()
 
 
+class SettingsForm(StatesGroup):
+    bot_name = State()
+    welcome_text = State()
+    contact_phone = State()
+    contact_username = State()
+
+
 def keyboard():
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -583,6 +590,75 @@ async def add_service_description(message: Message, state: FSMContext):
     await message.answer(
         f"Услуга «{data['title']}» успешно добавлена!"
     )
+@dp.message(Command("settings"))
+async def settings_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        await message.answer("Нет доступа.")
+        return
+
+    settings = get_settings()
+
+    if not settings:
+        await message.answer("Настройки не найдены.")
+        return
+
+    await message.answer(
+        "⚙️ Настройки бизнеса\n\n"
+        f"Название: {settings.get('bot_name')}\n"
+        f"Приветствие: {settings.get('welcome_text')}\n"
+        f"Телефон: {settings.get('contact_phone')}\n"
+        f"Telegram: {settings.get('contact_username')}\n\n"
+        "Чтобы изменить настройки, напишите:\n"
+        "/editsettings"
+    )
+
+@dp.message(Command("editsettings"))
+async def edit_settings_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        await message.answer("Нет доступа.")
+        return
+
+    await state.set_state(SettingsForm.bot_name)
+    await message.answer("Введите новое название бизнеса:")
+
+@dp.message(SettingsForm.bot_name)
+async def edit_settings_name(message: Message, state: FSMContext):
+    await state.update_data(bot_name=message.text.strip())
+    await state.set_state(SettingsForm.welcome_text)
+    await message.answer("Введите новое приветствие:")
+
+@dp.message(SettingsForm.welcome_text)
+async def edit_settings_welcome(message: Message, state: FSMContext):
+    await state.update_data(welcome_text=message.text.strip())
+    await state.set_state(SettingsForm.contact_phone)
+    await message.answer("Введите контактный телефон:")
+
+@dp.message(SettingsForm.contact_phone)
+async def edit_settings_phone(message: Message, state: FSMContext):
+    await state.update_data(contact_phone=message.text.strip())
+    await state.set_state(SettingsForm.contact_username)
+    await message.answer("Введите Telegram для связи (например, @username):")
+
+@dp.message(SettingsForm.contact_username)
+async def edit_settings_username(message: Message, state: FSMContext):
+    data = await state.get_data()
+    data["contact_username"] = message.text.strip()
+
+    try:
+        result = update_settings(data)
+        if not result:
+            await message.answer("Не удалось сохранить настройки.")
+            await state.clear()
+            return
+    except Exception:
+        logging.exception("Ошибка обновления настроек")
+        await message.answer("Ошибка при сохранении настроек.")
+        await state.clear()
+        return
+
+    await state.clear()
+    await message.answer("Настройки бизнеса успешно обновлены!")
+
 
 @dp.message(Command("deleteservice"))
 async def delete_service_command(message: Message):
