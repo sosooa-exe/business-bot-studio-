@@ -673,6 +673,27 @@ async def settings_start(message: Message, state: FSMContext):
     )
 
 
+@dp.message(Command("editsettings"))
+async def edit_settings_start(message: Message, state: FSMContext):
+    if not admin(message.from_user.id):
+        await message.answer("Нет доступа.")
+        return
+
+    data = await state.get_data()
+    if not data.get("business_id"):
+        await message.answer("Сначала откройте бота по ссылке вашего бизнеса.")
+        return
+
+    await state.set_state(SettingsForm.bot_name)
+    await message.answer("Введите новое название бизнеса:")
+
+@dp.message(SettingsForm.bot_name)
+async def edit_settings_name(message: Message, state: FSMContext):
+    await state.update_data(bot_name=message.text.strip())
+    await state.set_state(SettingsForm.welcome_text)
+    await message.answer("Введите новое приветствие:")
+
+@dp.message(SettingsForm.welcome_text)
 async def edit_settings_welcome(message: Message, state: FSMContext):
     await state.update_data(welcome_text=message.text.strip())
     await state.set_state(SettingsForm.contact_phone)
@@ -687,10 +708,16 @@ async def edit_settings_phone(message: Message, state: FSMContext):
 @dp.message(SettingsForm.contact_username)
 async def edit_settings_username(message: Message, state: FSMContext):
     data = await state.get_data()
+    business_id = data.get("business_id")
     data["contact_username"] = message.text.strip()
 
+    if not business_id:
+        await message.answer("Не найден бизнес.")
+        await state.clear()
+        return
+
     try:
-        result = update_settings(data)
+        result = update_settings(business_id, data)
         if not result:
             await message.answer("Не удалось сохранить настройки.")
             await state.clear()
@@ -703,7 +730,7 @@ async def edit_settings_username(message: Message, state: FSMContext):
 
     await state.clear()
     await message.answer("Настройки бизнеса успешно обновлены!")
-
+    
 
 @dp.message(Command("deleteservice"))
 async def delete_service_command(message: Message):
