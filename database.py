@@ -51,8 +51,8 @@ def get_settings(business_id: str) -> dict:
     return response.data[0] if response.data else {}
     
 
-def update_settings(data: dict) -> dict:
-    settings = get_settings()
+def update_settings(business_id: str, data: dict) -> dict:
+    settings = get_settings(business_id)
 
     if not settings:
         return {}
@@ -62,6 +62,7 @@ def update_settings(data: dict) -> dict:
         .table("bot_settings")
         .update(data)
         .eq("id", settings["id"])
+        .eq("business_id", business_id)
         .execute()
     )
     return response.data[0] if response.data else {}
