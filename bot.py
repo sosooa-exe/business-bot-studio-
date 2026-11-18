@@ -18,6 +18,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from config import BOT_TOKEN, ADMIN_IDS, BUSINESS_CONTACT_TEXT
 from database import (
     get_settings,
+    update_settings,
     get_active_services,
     create_lead,
     create_booking,
