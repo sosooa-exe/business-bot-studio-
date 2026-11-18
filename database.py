@@ -77,3 +77,44 @@ def get_recent_bookings(limit: int = 10) -> list[dict]:
         .execute()
     )
     return response.data or []
+    def create_service(data: dict) -> dict:
+    response = (
+        get_db()
+        .table("services")
+        .insert(data)
+        .execute()
+    )
+    return response.data[0] if response.data else {}
+
+
+def update_service(service_id: str, data: dict) -> dict:
+    response = (
+        get_db()
+        .table("services")
+        .update(data)
+        .eq("id", service_id)
+        .execute()
+    )
+    return response.data[0] if response.data else {}
+
+
+def deactivate_service(service_id: str) -> dict:
+    response = (
+        get_db()
+        .table("services")
+        .update({"is_active": False})
+        .eq("id", service_id)
+        .execute()
+    )
+    return response.data[0] if response.data else {}
+
+
+def get_all_services() -> list[dict]:
+    response = (
+        get_db()
+        .table("services")
+        .select("*")
+        .order("sort_order")
+        .execute()
+    )
+    return response.data or []
