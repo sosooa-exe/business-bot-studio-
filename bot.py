@@ -494,7 +494,37 @@ async def add_service_description(message: Message, state: FSMContext):
         f"Услуга «{data['title']}» успешно добавлена!"
     )
 
-async def main():
+@dp.message(Command("deleteservice"))
+async def delete_service_command(message: Message):
+    if not admin(message.from_user.id):
+        await message.answer("Нет доступа.")
+        return
+
+    parts = message.text.split(maxsplit=1)
+
+    if len(parts) < 2:
+        await message.answer(
+            "Укажите ID услуги.\nПример: /deleteservice 1\n\n"
+            "Посмотреть ID можно командой /services"
+        )
+        return
+
+    service_id = parts[1].strip()
+
+    try:
+        result = deactivate_service(service_id)
+        if not result:
+            await message.answer("Услуга не найдена.")
+            return
+    except Exception:
+        logging.exception("Ошибка отключения услуги")
+        await message.answer("Не удалось отключить услугу.")
+        return
+
+    await message.answer("Услуга отключена и скрыта из каталога.")
+    
+    
+    async def main():
     logging.info("Business Bot Studio запущен")
     await dp.start_polling(bot)
 
