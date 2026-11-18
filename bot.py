@@ -393,9 +393,17 @@ async def lead_message(message: Message, state: FSMContext):
 
 
 @dp.message(F.text == "☎️ Контакты")
-async def contacts(message: Message):
-    settings = get_settings()
+async def contacts(message: Message, state: FSMContext):
+    data = await state.get_data()
+    business_id = data.get("business_id")
 
+    if not business_id:
+        await message.answer("Сначала откройте бота по ссылке вашего бизнеса.")
+        return
+
+    settings = get_settings(business_id)
+
+    
     phone = settings.get("contact_phone") or "Не указан"
     username = settings.get("contact_username") or "Не указан"
 
