@@ -169,18 +169,6 @@ async def catalog(message: Message, state: FSMContext):
             reply_markup=builder.as_markup(),
             parse_mode="HTML",
         )
-
-        
-            text="📅 Записаться",
-            callback_data=f"book:{service['id']}",
-        )
-
-        await message.answer(
-            f"<b>{service.get('title', 'Услуга')}</b>\n"
-            f"{service.get('description') or 'Описание уточняйте у администратора.'}\n\n"
-            f"Стоимость: {price(service.get('price'))}",
-            reply_markup=builder.as_markup(),
-            parse_mode="HTML",
             
 
 @dp.message(F.text == "📅 Записаться")
