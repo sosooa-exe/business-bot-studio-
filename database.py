@@ -12,7 +12,7 @@ def get_db() -> Client:
     )
 
 
-def get_settings() -> dict:    
+def get_settings() -> dict:
     response = (
         get_db()
         .table("bot_settings")
@@ -21,6 +21,8 @@ def get_settings() -> dict:
         .execute()
     )
     return response.data[0] if response.data else {}
+
+
 def get_active_services() -> list[dict]:
     response = (
         get_db()
@@ -31,6 +33,8 @@ def get_active_services() -> list[dict]:
         .execute()
     )
     return response.data or []
+
+
 def create_lead(data: dict) -> dict:
     response = (
         get_db()
@@ -73,8 +77,10 @@ def get_recent_bookings(limit: int = 10) -> list[dict]:
         .execute()
     )
     return response.data or []
-    def create_service(data: dict) -> dict:
-        response = (
+
+
+def create_service(data: dict) -> dict:
+    response = (
         get_db()
         .table("services")
         .insert(data)
