@@ -618,11 +618,21 @@ async def add_service_price(message: Message, state: FSMContext):
 
 
 @dp.message(ServiceForm.description)
+
+
+@dp.message(ServiceForm.description)
 async def add_service_description(message: Message, state: FSMContext):
     data = await state.get_data()
+    business_id = data.get("business_id")
+
+    if not business_id:
+        await message.answer("Не найден бизнес. Откройте ссылку своего бизнеса.")
+        await state.clear()
+        return
 
     try:
         create_service({
+            "business_id": business_id,
             "title": data["title"],
             "price": data["price"],
             "description": message.text.strip(),
