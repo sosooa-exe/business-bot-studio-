@@ -141,8 +141,6 @@ async def start(message: Message, state: FSMContext):
 
 @dp.message(F.text == "🛍 Каталог")
 @dp.message(Command("catalog"))
-@dp.message(F.text == "🛍 Каталог")
-@dp.message(Command("catalog"))
 async def catalog(message: Message, state: FSMContext):
     data = await state.get_data()
     business_id = data.get("business_id")
@@ -160,6 +158,19 @@ async def catalog(message: Message, state: FSMContext):
     for service in services:
         builder = InlineKeyboardBuilder()
         builder.button(
+            text="📅 Записаться",
+            callback_data=f"book:{service['id']}",
+        )
+
+        await message.answer(
+            f"<b>{service.get('title', 'Услуга')}</b>\n"
+            f"{service.get('description') or 'Описание уточняйте у администратора.'}\n\n"
+            f"Стоимость: {price(service.get('price'))}",
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML",
+        )
+
+        
             text="📅 Записаться",
             callback_data=f"book:{service['id']}",
         )
