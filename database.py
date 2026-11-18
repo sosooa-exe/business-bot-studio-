@@ -33,8 +33,6 @@ def get_active_services() -> list[dict]:
         .execute()
     )
     return response.data or []
-
-
 def create_lead(data: dict) -> dict:
     response = (
         get_db()
