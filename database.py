@@ -26,6 +26,18 @@ def get_business_by_owner(telegram_id: int) -> dict | None:
     )
     return response.data[0] if response.data else None
 
+def get_business_by_slug(slug: str) -> dict | None:
+    response = (
+        get_db()
+        .table("businesses")
+        .select("*")
+        .eq("slug", slug)
+        .eq("status", "active")
+        .limit(1)
+        .execute()
+    )
+    return response.data[0] if response.data else None
+    
 
 def get_settings() -> dict:
     response = (
