@@ -514,8 +514,8 @@ async def edit_service_start(message: Message, state: FSMContext):
     await state.update_data(editing=True)
     await message.answer(text)
     async def main():
-    logging.info("Business Bot Studio запущен")
-    await dp.start_polling(bot)
+        logging.info("Business Bot Studio запущен")
+        await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
